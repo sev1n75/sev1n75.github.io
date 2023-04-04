@@ -212,13 +212,11 @@
 <p>当<code>fp-&gt;vtable</code>为比如<code>_IO_wfile_overflow()</code>时，则会把<code>fp-&gt;_wide_data</code>作为参数，去执行。</p>
 <h4 id="2-2-2-调用链检查绕过"><a href="#2-2-2-调用链检查绕过" class="headerlink" title="| 2.2.2 | 调用链检查绕过"></a>| 2.2.2 | 调用链检查绕过</h4><ul>
 <li><p>调用链</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+608&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br><span class="line">&lt;_IO_wdoallocbuf+43&gt;    callq  *0x68(%rax)  # rax为_wide_data-&gt;_wide_vtable(+0xe0)</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+<span class="number">608</span>&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br><span class="line">&lt;_IO_wdoallocbuf+<span class="number">43</span>&gt;    callq  *<span class="number">0x68</span>(%rax)  # <span class="comment">//rax为_wide_data-&gt;_wide_vtable(+0xe0)</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>检查</p>
-</li>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+<span class="number">27</span>&gt;     testb  $<span class="number">8</span>, %ah  <span class="comment">//fake_io_file.flag = 0x800 或者0</span></span><br><span class="line">&lt;_IO_wfile_overflow+<span class="number">30</span>&gt;     jne    _IO_wfile_overflow+<span class="number">156</span></span><br><span class="line"></span><br><span class="line">&lt;_IO_wfile_overflow+<span class="number">32</span>&gt;    movq   <span class="number">0xa0</span>(%rdi), %rdx  <span class="comment">//%rdx = wide_data</span></span><br><span class="line">&lt;_IO_wfile_overflow+<span class="number">39</span>&gt;    cmpq   $<span class="number">0</span>, <span class="number">0x18</span>(%rdx)  <span class="comment">//*(wide_data +0x18) = 0</span></span><br><span class="line">&lt;_IO_wfile_overflow+<span class="number">44</span>&gt;    je     _IO_wfile_overflow+<span class="number">608</span>   </span><br><span class="line"><span class="comment">//······</span></span><br><span class="line">&lt;_IO_wfile_overflow+<span class="number">608</span>&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br></pre></td></tr></table></figure></li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+27&gt;     testb  $8, %ah  //fake_io_file.flag = 0x800 或者0</span><br><span class="line">&lt;_IO_wfile_overflow+30&gt;     jne    _IO_wfile_overflow+156</span><br><span class="line"></span><br><span class="line">&lt;_IO_wfile_overflow+32&gt;    movq   0xa0(%rdi), %rdx  //%rdx = wide_data</span><br><span class="line">&lt;_IO_wfile_overflow+39&gt;    cmpq   $0, 0x18(%rdx)  //*(wide_data +0x18) = 0</span><br><span class="line">&lt;_IO_wfile_overflow+44&gt;    je     _IO_wfile_overflow+608   </span><br><span class="line">//······</span><br><span class="line">&lt;_IO_wfile_overflow+608&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br></pre></td></tr></table></figure>
-
 <h4 id="2-2-3-如何设置-fake-FILE-结构体"><a href="#2-2-3-如何设置-fake-FILE-结构体" class="headerlink" title="| 2.2.3 | 如何设置 fake FILE 结构体"></a>| 2.2.3 | 如何设置 fake FILE 结构体</h4><ul>
 <li><p>首先先要明确，我们要伪造三个结构, <code>FILE</code> 结构体 <code>_IO_wide_data</code> 结构体 以及 <code>_wide_vtable</code></p>
 </li>
@@ -277,7 +275,7 @@
 </li>
 </ul>
 <p>所以要调整一下IO_FILE的学习思路了，网上各种各样的调用链感觉可以分成上面两类来学，学的时候就主要注意结构体成员是怎么设置的，有源码的看看源码，没有的gdb跟进去看一下原因</p>
-<h3 id="2023-4-3"><a href="#2023-4-3" class="headerlink" title="2023.4.3"></a>2023.4.3</h3><p>今天做了 house of cat 算是把 _IO_FILE 弄的比较抻展了。</p>
+<h3 id="2023-4-3"><a href="#2023-4-3" class="headerlink" title="2023.4.3"></a>2023.4.3</h3><p>今天为止算是把 _IO_FILE 弄的比较抻展了。</p>
 <p>后面几个方向：kernel pwn, 编译原理+chromium&amp;v8, Fuzzing, IOT</p>
 <p>先从kernel开始吧</p>
 
