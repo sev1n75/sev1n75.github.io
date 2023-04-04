@@ -126,7 +126,7 @@
 
 <div id="toc" class="toc-article">
       <div class="toc-content">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%89%8D%E8%A8%80"><span class="toc-text">| 0 | 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-text">| 1 | 前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-fopen-fread-fwrite"><span class="toc-text">| 1.1 | fopen,fread,fwrite</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-FILE%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">| 1.2 | FILE结构体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-vtable-%E5%92%8C-IO-FILE-plus"><span class="toc-text">| 1.3 | vtable 和 _IO_FILE_plus</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">| 2 | 利用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%9F%BA%E4%BA%8Evtable%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-text">| 2.1 | 基于vtable的利用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-%E4%B8%80%E8%88%AC%E4%BC%AA%E9%80%A0%E7%BB%93%E6%9E%84%E4%BD%93%E6%9C%89%E4%B8%A4%E4%B8%AA%E4%B8%BB%E8%A6%81%E6%80%9D%E8%B7%AF"><span class="toc-text">| 2.1.1 | 一般伪造结构体有两个主要思路:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-%E8%A7%A6%E5%8F%91-IO-%E6%B5%81%E7%9A%84%E6%93%8D%E4%BD%9C%E4%B8%80%E8%88%AC%E6%9C%89%E4%B8%89%E7%A7%8D"><span class="toc-text">| 2.1.2 | 触发 IO 流的操作一般有三种</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-house-of-apple2"><span class="toc-text">| 2.2 | house of apple2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="toc-text">| 2.2.1 | 原理分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E8%B0%83%E7%94%A8%E9%93%BE%E6%A3%80%E6%9F%A5"><span class="toc-text">| 2.2.2 | 调用链检查</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%9F%BA%E4%BA%8E-fread-%E5%92%8C-fwrite-%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99"><span class="toc-text">| 2.3 | 基于 fread 和 fwrite 任意地址读写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%B8%80%E4%BA%9B%E5%BA%9F%E8%AF%9D"><span class="toc-text">| 3 | 一些废话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2023-3-28"><span class="toc-text">2023.3.28</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%89%8D%E8%A8%80"><span class="toc-text">| 0 | 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-text">| 1 | 前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-fopen-fread-fwrite"><span class="toc-text">| 1.1 | fopen,fread,fwrite</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-FILE%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">| 1.2 | FILE结构体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-vtable-%E5%92%8C-IO-FILE-plus"><span class="toc-text">| 1.3 | vtable 和 _IO_FILE_plus</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">| 2 | 利用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%9F%BA%E4%BA%8Evtable%E7%9A%84%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="toc-text">| 2.1 | 基于vtable的利用思路</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-%E4%B8%80%E8%88%AC%E4%BC%AA%E9%80%A0%E7%BB%93%E6%9E%84%E4%BD%93%E6%9C%89%E4%B8%A4%E4%B8%AA%E4%B8%BB%E8%A6%81%E6%80%9D%E8%B7%AF"><span class="toc-text">| 2.1.1 | 一般伪造结构体有两个主要思路:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-%E8%A7%A6%E5%8F%91-IO-%E6%B5%81%E7%9A%84%E6%93%8D%E4%BD%9C%E4%B8%80%E8%88%AC%E6%9C%89%E4%B8%89%E7%A7%8D"><span class="toc-text">| 2.1.2 | 触发 IO 流的操作一般有三种</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-house-of-apple2"><span class="toc-text">| 2.2 | house of apple2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="toc-text">| 2.2.1 | 原理分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E8%B0%83%E7%94%A8%E9%93%BE%E6%A3%80%E6%9F%A5%E7%BB%95%E8%BF%87"><span class="toc-text">| 2.2.2 | 调用链检查绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE-fake-FILE-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">| 2.2.3 | 如何设置 fake FILE 结构体</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%9F%BA%E4%BA%8E-fread-%E5%92%8C-fwrite-%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99"><span class="toc-text">| 2.3 | 基于 fread 和 fwrite 任意地址读写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%B8%80%E4%BA%9B%E5%BA%9F%E8%AF%9D"><span class="toc-text">| 3 | 一些废话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2023-3-28"><span class="toc-text">2023.3.28</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2023-4-3"><span class="toc-text">2023.4.3</span></a></li></ol></li></ol>
       </div>
 </div>
 <style>
@@ -138,7 +138,7 @@
 
 
 
-        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>关于 FILE(_IO_FILE) 结构体的利用，网络上博客比较多，但是很杂很乱，我学习的时候比较迷茫。这篇博客中，我总结了我学习 FILE 结构体的一些经验和一些资料，希望能够帮到你。</p>
+        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>关于 FILE(_IO_FILE) 结构体的利用，网络上博客比较多，但是很杂很乱，我学习的时候比较迷茫。这篇博客中，我总结了我学习 FILE 结构体的一些经验和一些资料。</p>
 <span id="more"></span>
 
 <hr>
@@ -165,9 +165,9 @@
 <p><a target="_blank" rel="noopener" href="https://blog.kylebot.net/2022/10/22/angry-FSROP/">angry-FSROP</a></p>
 </blockquote>
 <p>关于 <code>_IO_FILE</code> 在 glibc2.35 的利用现状思考可以看一下上面贴的<code>anrgy-FSROP</code>，感觉读完作者的分析能对 <code>_IO_FILE</code> 的利用有一些理解。</p>
-<h3 id="2-1-基于vtable的利用"><a href="#2-1-基于vtable的利用" class="headerlink" title="| 2.1 | 基于vtable的利用"></a>| 2.1 | 基于vtable的利用</h3><p>_IO_FILE 攻击主要是通过劫持<code>_IO_list_all</code>或者<code>stderr</code>使其指向我们伪造的 fake_file_struct，使得程序在执行IO函数时，会根据我们伪造的 FILE 结构体来选择，这种攻击方式被称为<code>FSOP</code>(File Stream Orientede Programming)。<del>面向文件流编程或者说文件流导向编程</del></p>
+<h3 id="2-1-基于vtable的利用思路"><a href="#2-1-基于vtable的利用思路" class="headerlink" title="| 2.1 | 基于vtable的利用思路"></a>| 2.1 | 基于vtable的利用思路</h3><p>_IO_FILE 攻击主要是通过劫持<code>_IO_list_all</code>或者<code>stderr</code>使其指向我们伪造的 fake_file_struct，使得程序在执行IO函数时，会根据我们伪造的 FILE 结构体来选择，这种攻击方式被称为<code>FSOP</code>(File Stream Orienteded Programming)。<del>面向文件流编程或者说文件流导向编程</del></p>
 <p>由于vtable的特殊性，我们通常会在此处做文章劫持程序流，但是在 glibc2.24 加入了 vtable 检查</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">fwrite中的检查，其他的也类似,这是一个叫IO_validate_vtable的函数，但是被定义成了宏？</span></span><br><span class="line"><span class="comment">不是很懂，反正汇编里面没有call而直接写在里面了</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># define _IO_JUMPS_FUNC(THIS) (IO_validate_vtable (_IO_JUMPS_FILE_plus (THIS)))</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">static inline const struct _IO_jump_t *</span></span><br><span class="line"><span class="comment">IO_validate_vtable (const struct _IO_jump_t *vtable)&#123;····&#125;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">https://elixir.bootlin.com/glibc/glibc-2.37/source/libio/libioP.h#L935</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">&lt;+<span class="number">131</span>&gt;:   mov    <span class="number">0xd8</span>(%rbx),%r15    <span class="comment">// %rbx = fake_file ,r15 = fake_file-&gt;vtable</span></span><br><span class="line">&lt;+<span class="number">138</span>&gt;:   lea    <span class="number">0x1959cf</span>(%rip),%rdx    # <span class="number">0x7fce24af8a00</span> &lt;_IO_helper_jumps&gt; <span class="comment">//vtable允许的最小地址</span></span><br><span class="line">&lt;+<span class="number">145</span>&gt;:   lea    <span class="number">0x196730</span>(%rip),%rax    # <span class="number">0x7fce24af9768</span>  <span class="comment">//允许的最大地址</span></span><br><span class="line">&lt;+<span class="number">152</span>&gt;:   sub    %rdx,%rax   <span class="comment">// %rax -= %rdx  即%rax为偏移最大值</span></span><br><span class="line">&lt;+<span class="number">155</span>&gt;:   mov    %r15,%rcx   <span class="comment">// %rcx = my_vtable</span></span><br><span class="line">&lt;+<span class="number">158</span>&gt;:   sub    %rdx,%rcx   <span class="comment">// %rcx = my_vtable - %rdx = my_offset</span></span><br><span class="line">&lt;+<span class="number">161</span>&gt;:   cmp    %rcx,%rax   <span class="comment">//比较 rax 和 rcx</span></span><br><span class="line">&lt;+<span class="number">164</span>&gt;:   jbe    &lt;__GI__IO_fwrite+<span class="number">352</span>&gt; <span class="comment">// 以无符号的形式 rax &lt;= rcx 则 jump</span></span><br><span class="line"><span class="comment">//··············</span></span><br><span class="line">&lt;+<span class="number">352</span>&gt;:   call   &lt;_IO_vtable_check&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">fwrite中的检查，其他的也类似,这是一个叫IO_validate_vtable的函数，但是被定义成了宏？</span></span><br><span class="line"><span class="comment">不是很懂，反正汇编里面没有call而直接写在里面了</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># define _IO_JUMPS_FUNC(THIS) (IO_validate_vtable (_IO_JUMPS_FILE_plus (THIS)))</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">static inline const struct _IO_jump_t *</span></span><br><span class="line"><span class="comment">IO_validate_vtable (const struct _IO_jump_t *vtable)&#123;····&#125;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">https://elixir.bootlin.com/glibc/glibc-2.37/source/libio/libioP.h#L935</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">&lt;+<span class="number">131</span>&gt;:   mov    <span class="number">0xd8</span>(%rbx),%r15    <span class="comment">// %rbx = fake_file ,%r15 = fake_file-&gt;vtable</span></span><br><span class="line">&lt;+<span class="number">138</span>&gt;:   lea    <span class="number">0x1959cf</span>(%rip),%rdx    # <span class="number">0x7fce24af8a00</span> &lt;_IO_helper_jumps&gt; <span class="comment">//vtable允许的最小地址</span></span><br><span class="line">&lt;+<span class="number">145</span>&gt;:   lea    <span class="number">0x196730</span>(%rip),%rax    # <span class="number">0x7fce24af9768</span>  <span class="comment">//允许的最大地址</span></span><br><span class="line">&lt;+<span class="number">152</span>&gt;:   sub    %rdx,%rax   <span class="comment">// %rax -= %rdx  即rax为偏移最大值</span></span><br><span class="line">&lt;+<span class="number">155</span>&gt;:   mov    %r15,%rcx   <span class="comment">// %rcx = my_vtable</span></span><br><span class="line">&lt;+<span class="number">158</span>&gt;:   sub    %rdx,%rcx   <span class="comment">// %rcx = my_vtable - %rdx = my_offset</span></span><br><span class="line">&lt;+<span class="number">161</span>&gt;:   cmp    %rcx,%rax   <span class="comment">//比较 rax 和 rcx</span></span><br><span class="line">&lt;+<span class="number">164</span>&gt;:   jbe    &lt;__GI__IO_fwrite+<span class="number">352</span>&gt; <span class="comment">// 以无符号的形式 rax &lt;= rcx 则 jump</span></span><br><span class="line"><span class="comment">//··············</span></span><br><span class="line">&lt;+<span class="number">352</span>&gt;:   call   &lt;_IO_vtable_check&gt;</span><br></pre></td></tr></table></figure>
 
 <p>根据上面的代码，我们一般只能在一定范围内修改 FILE 结构体的 vtable。</p>
 <p>所以，利用方式通常是：根据目前已经发现的存在漏洞的调用链来伪造 FILE 结构体。</p>
@@ -202,8 +202,53 @@
 </li>
 </ul>
 <h3 id="2-2-house-of-apple2"><a href="#2-2-house-of-apple2" class="headerlink" title="| 2.2 | house of apple2"></a>| 2.2 | house of apple2</h3><p>目前为止(glibc2.37)我觉得比较实用的链子是house of apple2，具体可以看上面的参考链接。当然，还有很多不错的链子比如 emma、 kiwi、 banana 等等。</p>
-<p>这里主要介绍house of apple2的基于<code>_IO_wfile_overflow()</code>这个合法vtable函数的利用思路。</p>
-<h4 id="2-2-1-原理分析"><a href="#2-2-1-原理分析" class="headerlink" title="| 2.2.1 | 原理分析"></a>| 2.2.1 | 原理分析</h4><h4 id="2-2-2-调用链检查"><a href="#2-2-2-调用链检查" class="headerlink" title="| 2.2.2 | 调用链检查"></a>| 2.2.2 | 调用链检查</h4><h3 id="2-3-基于-fread-和-fwrite-任意地址读写"><a href="#2-3-基于-fread-和-fwrite-任意地址读写" class="headerlink" title="| 2.3 | 基于 fread 和 fwrite 任意地址读写"></a>| 2.3 | 基于 fread 和 fwrite 任意地址读写</h3><ul>
+<p>这里主要介绍 house of apple2 中基于<code>_IO_wfile_overflow()</code>这个合法vtable函数的利用思路。</p>
+<h4 id="2-2-1-原理分析"><a href="#2-2-1-原理分析" class="headerlink" title="| 2.2.1 | 原理分析"></a>| 2.2.1 | 原理分析</h4><p>虽然在 FILE 结构体中对vtable的合法性进行了检查，但是在 <code>_IO_wide_data</code>结构体中，其对应有一个<code>_wide_vtable</code>成员。</p>
+<p>在调用<code>_wide_vtable</code>时没有检查vtable的合法性</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _IO_WIDE_JUMPS(THIS) \</span></span><br><span class="line"><span class="meta">  _IO_CAST_FIELD_ACCESS ((THIS), struct _IO_FILE, _wide_data)-&gt;_wide_vtable</span></span><br></pre></td></tr></table></figure>
+
+<p>所以只需要调用到<code>_IO_wide_data-&gt;_wide_vtable</code>即可。</p>
+<p><code>(fp + 0xa0)</code> 为 <code>fp-&gt;_wide_data</code> 域，此处的值为 <code>_IO_wide_data</code> 结构体的地址</p>
+<p>当<code>fp-&gt;vtable</code>为比如<code>_IO_wfile_overflow()</code>时，则会把<code>fp-&gt;_wide_data</code>作为参数，去执行。</p>
+<h4 id="2-2-2-调用链检查绕过"><a href="#2-2-2-调用链检查绕过" class="headerlink" title="| 2.2.2 | 调用链检查绕过"></a>| 2.2.2 | 调用链检查绕过</h4><ul>
+<li><p>调用链</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+608&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br><span class="line">&lt;_IO_wdoallocbuf+43&gt;    callq  *0x68(%rax)  # rax为_wide_data-&gt;_wide_vtable(+0xe0)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检查</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;_IO_wfile_overflow+27&gt;     testb  $8, %ah  //fake_io_file.flag = 0x800 或者0</span><br><span class="line">&lt;_IO_wfile_overflow+30&gt;     jne    _IO_wfile_overflow+156</span><br><span class="line"></span><br><span class="line">&lt;_IO_wfile_overflow+32&gt;    movq   0xa0(%rdi), %rdx  //%rdx = wide_data</span><br><span class="line">&lt;_IO_wfile_overflow+39&gt;    cmpq   $0, 0x18(%rdx)  //*(wide_data +0x18) = 0</span><br><span class="line">&lt;_IO_wfile_overflow+44&gt;    je     _IO_wfile_overflow+608   </span><br><span class="line">//······</span><br><span class="line">&lt;_IO_wfile_overflow+608&gt;:   call  &lt;__GI__IO_wdoallocbuf&gt;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-3-如何设置-fake-FILE-结构体"><a href="#2-2-3-如何设置-fake-FILE-结构体" class="headerlink" title="| 2.2.3 | 如何设置 fake FILE 结构体"></a>| 2.2.3 | 如何设置 fake FILE 结构体</h4><ul>
+<li><p>首先先要明确，我们要伪造三个结构, <code>FILE</code> 结构体 <code>_IO_wide_data</code> 结构体 以及 <code>_wide_vtable</code></p>
+</li>
+<li><p>FILE 结构体</p>
+<ul>
+<li>先根据触发 IO 的条件设置</li>
+<li>fake_file-&gt;wide_data(+0xa0) &#x3D; fake_wide_data_addr</li>
+<li>fake_file-&gt;vtable &#x3D; 保存_IO_wfile_overflow的一个地址-0x18(看触发 IO 时是调用的那个偏移)</li>
+</ul>
+</li>
+<li><p>_IO_wide_data 结构体</p>
+<ul>
+<li>fake_wide_data + 0x18 &#x3D; 0</li>
+<li>fake_wide_data + 0xe0 &#x3D; fake_vtable_addr</li>
+</ul>
+</li>
+<li><p>_wide_vtable</p>
+<ul>
+<li>fake_vtable_addr + 0x68的值为A</li>
+<li>A的值为目标函数</li>
+</ul>
+</li>
+<li><p>目标函数</p>
+<ul>
+<li>如果没有沙盒则考虑one_gadget</li>
+<li>如果one_gadget不行或者开了沙盒，则考虑<code>setcontext+61</code>结合ROP</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-基于-fread-和-fwrite-任意地址读写"><a href="#2-3-基于-fread-和-fwrite-任意地址读写" class="headerlink" title="| 2.3 | 基于 fread 和 fwrite 任意地址读写"></a>| 2.3 | 基于 fread 和 fwrite 任意地址读写</h3><ul>
 <li><p>任意地址写<br>修改<code>fread(buf,size,nmemb,fp)</code>中的<code>fp-&gt;_IO_buf_base</code>为写入起始地址</p>
 <p><code>_IO_buf_end</code>结束地址; 其他 FILE 指针为0</p>
 <p>可以利用 pwntools</p>
@@ -217,7 +262,8 @@
   <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">target_addr = <span class="number">0x7fffa0a0a0a0</span></span><br><span class="line">fp = FileStructure()</span><br><span class="line">payload = fp.write(target_addr,<span class="number">40</span>)</span><br><span class="line"><span class="built_in">print</span>(fp)</span><br><span class="line"><span class="built_in">print</span>(payload)</span><br></pre></td></tr></table></figure></li>
 </ul>
 <hr>
-<h2 id="3-一些废话"><a href="#3-一些废话" class="headerlink" title="| 3 | 一些废话"></a>| 3 | 一些废话</h2><h3 id="2023-3-28"><a href="#2023-3-28" class="headerlink" title="2023.3.28"></a>2023.3.28</h3><p>在打昨天的校赛的时候才切实体会到了_IO_FILE利用的目的—–辅助堆溢出,还有一些利用方式</p>
+<h2 id="3-一些废话"><a href="#3-一些废话" class="headerlink" title="| 3 | 一些废话"></a>| 3 | 一些废话</h2><p>下面是我在学 _IO_FILE 期间写的某种日记，放在最后了。</p>
+<h3 id="2023-3-28"><a href="#2023-3-28" class="headerlink" title="2023.3.28"></a>2023.3.28</h3><p>在打昨天的校赛的时候才切实体会到了_IO_FILE利用的目的—–辅助堆溢出,还有一些利用方式</p>
 <ul>
 <li><p>_IO_FILE的作用:</p>
 <ol>
@@ -231,6 +277,9 @@
 </li>
 </ul>
 <p>所以要调整一下IO_FILE的学习思路了，网上各种各样的调用链感觉可以分成上面两类来学，学的时候就主要注意结构体成员是怎么设置的，有源码的看看源码，没有的gdb跟进去看一下原因</p>
+<h3 id="2023-4-3"><a href="#2023-4-3" class="headerlink" title="2023.4.3"></a>2023.4.3</h3><p>今天做了 house of cat 算是把 _IO_FILE 弄的比较抻展了。</p>
+<p>后面几个方向：kernel pwn, 编译原理+chromium&amp;v8, Fuzzing, IOT</p>
+<p>先从kernel开始吧</p>
 
       
     </div>
