@@ -1,0 +1,271 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+    <title>
+      _IO_FILE结构体利用 | sev1n75 | Binary Exploit</title>
+
+  
+  <meta name="author" content="sev1n75">
+  
+
+  
+  <meta name="description" content="CTF Pwn 选手，以此博客分享技术和学习过程">
+  
+
+  
+  
+  <meta name="keywords" content="_IO_FILE">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="_IO_FILE结构体利用"/>
+
+  <meta property="og:site_name" content="sev1n75"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/favicon.png" rel="apple-touch-icon" sizes="76x76">
+  <link rel="alternate" href="/atom.xml" title="sev1n75" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  
+  <link href="https://fonts.lug.ustc.edu.cn/css?family=Lato|Rubik" rel="stylesheet">
+  <script src="/js/pangu-407.min.js"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+<script>
+  document.addEventListener(' DOMContentLoaded', () => {
+    pangu.autoSpacingPage();
+  });
+</script>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">
+        sev1n75's Tech Blog
+      </a>
+    </h1>
+    <p class="site-description">
+      
+        路漫漫其修远兮，吾将上下而求索
+          
+    </p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">
+            主页
+          </a></li>
+        
+        <li><a href="/archives">
+            归档
+          </a></li>
+        
+        <li><a href="/tags">
+            标签
+          </a></li>
+        
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>_IO_FILE结构体利用</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2023/04/04/IO-FILE利用/" rel="bookmark">
+        <time class="entry-date published" datetime="2023-04-04T04:17:32.000Z">
+          2023-04-04
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        
+
+<script type="text/javascript">
+    function convertRemToPixels(rem) {    
+        return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    }
+    window.onscroll = function() {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if (scrollTop > convertRemToPixels(40)) {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'visible';
+        } else {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'hidden';
+        }
+    }
+</script>
+
+
+<div id="toc" class="toc-article">
+      <div class="toc-content">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%89%8D%E8%A8%80"><span class="toc-text">| 1 | 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-text">| 2 | 前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-fopen-fread-fwrite"><span class="toc-text">| 2.1 | fopen,fread,fwrite</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-FILE%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">| 2.2 | FILE结构体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-vtable-%E5%92%8C-IO-FILE-plus"><span class="toc-text">| 2.3 | vtable 和 _IO_FILE_plus</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">| 3 | 利用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%9F%BA%E4%BA%8Evtable%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-text">| 3.1 | 基于vtable的利用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%9F%BA%E4%BA%8E-fread-%E5%92%8C-fwrite-%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99"><span class="toc-text">| 3.2 | 基于 fread 和 fwrite 任意地址读写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%B8%80%E4%BA%9B%E5%BA%9F%E8%AF%9D"><span class="toc-text">| 4 | 一些废话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2023-3-28"><span class="toc-text">2023.3.28</span></a></li></ol></li></ol>
+      </div>
+</div>
+<style>
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+
+
+        <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="| 1 | 前言"></a>| 1 | 前言</h2><p>关于 FILE(_IO_FILE) 结构体的利用，网络上博客比较多，但是很杂很乱，我学习的时候比较迷茫。这篇博客中，我总结了我学习 FILE 结构体的一些经验和一些资料，希望能够帮到你。</p>
+<span id="more"></span>
+
+<hr>
+<h2 id="2-前置知识"><a href="#2-前置知识" class="headerlink" title="| 2 | 前置知识"></a>| 2 | 前置知识</h2><blockquote>
+<p>参考资料：<br><a target="_blank" rel="noopener" href="https://dojo.pwn.college/software-exploitation/file-struct-exploits">pwn.college-File Struct Exploits</a>.里面关于 FILE 结构体的前置知识介绍的非常详细(视频和PPT需要科学上网)</p>
+</blockquote>
+<h3 id="2-1-fopen-fread-fwrite"><a href="#2-1-fopen-fread-fwrite" class="headerlink" title="| 2.1 | fopen,fread,fwrite"></a>| 2.1 | fopen,fread,fwrite</h3><p>由于<code>open()</code>,<code>read()</code>,<code>write()</code>是基于文件描述符(File Descriptor)也就是<code>fd</code>操作的函数，每次调用时都需要切换成内核态和硬件交互，所以开销较大。</p>
+<p>因此 glibc 提供了更为高效的<code>fopen()</code>,<code>fread()</code>和<code>fwrite()</code>，以及系列辅助的IO函数。他们都是基于文件指针(File Pointer)即<code>fp</code>操作的函数。</p>
+<p>File Pointer 是指向 FILE 结构体的指针(<code>FILE* fp</code>)。</p>
+<h3 id="2-2-FILE结构体"><a href="#2-2-FILE结构体" class="headerlink" title="| 2.2 | FILE结构体"></a>| 2.2 | FILE结构体</h3><p>FILE 结构体源码可以点<a href = "https://elixir.bootlin.com/glibc/glibc-2.35/source/libio/bits/types/struct_FILE.h#L49">这里</a>查看。</p>
+<p>FILE 结构体成员具体的作用这里不做介绍，推荐观看上面提到的 pwn.college 的 FILE Struct Exploits 视频。</p>
+<p>FILE 结构体当然是描述一个文件的结构了，不过文件结构这个词不是很具体。对于前几个成员，他们用来描述了一块缓冲区。通常该缓冲区是通过其他IO函数分配在堆区域的，用于解决基于<code>fd</code>的函数每次都要和硬件交互的问题。基于<code>fp</code>的函数是和其缓冲区直接交互，当缓冲区满了之后再刷新，读入进硬盘或者输出到设备。也可以通过<code>fflush()</code>手动刷新。</p>
+<h3 id="2-3-vtable-和-IO-FILE-plus"><a href="#2-3-vtable-和-IO-FILE-plus" class="headerlink" title="| 2.3 | vtable 和 _IO_FILE_plus"></a>| 2.3 | vtable 和 _IO_FILE_plus</h3><p><code>_IO_FILE_plus</code>在 <code>FILE</code>结构体的基础上封装了一个指向<code>_IO_jump_t</code>的指针<code>vtable</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  FILE file;</span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span> *<span class="title">vtable</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>vtable(virtual table) 是<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.35/source/libio/libioP.h#L293">_IO_jump_t</a>的指针其中存放了某些函数的指针</p>
+<p>举个例子：如果vtable的值存在寄存器 rax 中那么调用vtable中的某个偏移为0x68的函数时会执行<code>call *0x68(%rax)</code>即 vtable 里面存的不是函数的入口地址，而是保存函数入口地址的一个地址</p>
+<hr>
+<h2 id="3-利用方法"><a href="#3-利用方法" class="headerlink" title="| 3 | 利用方法"></a>| 3 | 利用方法</h2><h3 id="3-1-基于vtable的利用"><a href="#3-1-基于vtable的利用" class="headerlink" title="| 3.1 | 基于vtable的利用"></a>| 3.1 | 基于vtable的利用</h3><blockquote>
+<p>参考资料：</p>
+<p><a target="_blank" rel="noopener" href="https://dojo.pwn.college/software-exploitation/file-struct-exploits">pwn.college-File Struct Exploits</a></p>
+<p><a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/io-file/fsop/">ctf-wiki FSOP</a></p>
+<p><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-273832.htm">house of apple2</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.kylebot.net/2022/10/22/angry-FSROP/">angry-FSROP</a></p>
+</blockquote>
+<p>_IO_FILE 攻击主要是通过劫持<code>_IO_list_all</code>或者<code>stderr</code>使其指向我们伪造的 fake_file_struct，使得程序在执行IO函数时，会根据我们伪造的 FILE 结构体来选择，这种攻击方式被称为<code>FSOP</code>(File Stream Orientede Programming)<del>面向文件流编程或者说文件流导向编程</del></p>
+<p>目前为止(glibc2.37)我觉得比较实用的链子是house of apple2，具体可以看上面的参考链接。当然。另外，关于 <code>_IO_FILE</code> 在 glibc2.35 的利用现状思考可以看一下上面贴的<code>anrgy-FSROP</code>，感觉读完作者的分析能对 <code>_IO_FILE</code> 的利用有一些理解</p>
+<p>所以这里主要介绍house of apple2的利用思路。</p>
+<p>_IO_FILE 的利用简单来说就是如何伪造 FILE 结构体，使得程序按照设定的路线执行到目标位置。</p>
+<p>一般伪造结构体有两个主要思路:</p>
+<ul>
+<li><p>根据函数源码设置</p>
+<p>  在函数体量比较小的时候，这种方法我觉得还是很方便的，不过加上 glibc 的宏定义，有时候这种方法并不太好看其实，可以初步设置某些成员的值。</p>
+</li>
+<li><p>gdb动态调试</p>
+<p>  我个人比较喜欢这种，通过动调在出错位置附近看汇编代码，找到通过的方法，其实也是很方便的思路。</p>
+<p>  所以这里贴一些比较好用的gdb指令</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">bt <span class="comment">//back trace查看当前的函数调用链</span></span><br><span class="line">b* __fxprintf + <span class="number">171</span> <span class="comment">//断在某个函数的某一行</span></span><br><span class="line">p *(<span class="keyword">struct</span> _IO_FILE_plus *) <span class="number">0x55aaaaaaaaaaaa</span> <span class="comment">//把该地址作为 _IO_FILE_plus 结构体指针打印</span></span><br><span class="line">x/a &amp;_IO_list_all  <span class="comment">//检查(x) &amp;IO_list_all这个地址的内容，以地址(/a)的形式 </span></span><br><span class="line">x/a &amp;<span class="built_in">stderr</span></span><br><span class="line">p/x &amp;_IO_wfile_overflow <span class="comment">//以16进制(/x)打印(p) _IO_wfile_overflow的入口地址</span></span><br><span class="line">search -p <span class="number">0x7fa16799c410</span>    <span class="comment">//查看该地址储存位置，可以用于找vtable</span></span><br><span class="line">disass  <span class="comment">//反汇编当前函数</span></span><br><span class="line">x/<span class="number">30</span>i $rip   <span class="comment">//检查(x)rip($rip)往下30条指令(/i)</span></span><br><span class="line">x/s $rdi    <span class="comment">//检查(x) rdi($rdi)保存的地址指向的值，以字符串的形式(/s)</span></span><br><span class="line">x/<span class="number">30</span>gx $rax <span class="comment">//以四字(/gx) 的形式检查rax 指向的值，现实30项</span></span><br><span class="line">x/gx $rax+<span class="number">0x68</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>触发 IO 流一般有三种</p>
+<ul>
+<li><p>调用<code>exit()</code>函数</p>
+<img alt="图 1" src="images/image-20230404121440.png" />  
+</li>
+<li><p>触发<code>__malloc_asserty()</code></p>
+</li>
+<li><p>从 <code>main</code> 函数返回</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-基于-fread-和-fwrite-任意地址读写"><a href="#3-2-基于-fread-和-fwrite-任意地址读写" class="headerlink" title="| 3.2 | 基于 fread 和 fwrite 任意地址读写"></a>| 3.2 | 基于 fread 和 fwrite 任意地址读写</h3><ul>
+<li><p>任意地址写<br>修改<code>fread(buf,size,nmemb,fp)</code>中的<code>fp-&gt;_IO_buf_base</code>为写入起始地址</p>
+<p><code>_IO_buf_end</code>结束地址; 其他 FILE 指针为0</p>
+<p>可以利用 pwntools</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">target_addr = <span class="number">0x7fffa0a0a0a0</span></span><br><span class="line">fp = FileStructure()</span><br><span class="line">payload = fp.read(target_addr,<span class="number">20</span>)</span><br><span class="line"><span class="built_in">print</span>(fp)</span><br><span class="line"><span class="built_in">print</span>(payload)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>任意地址读<br>修改<code>flags = 0x800</code></p>
+<p><code>fileno = 1 # file descrptor</code></p>
+<p><code>_IO_read_end = _IO_write_base = target_addr</code></p>
+<p><code>_IO_write_ptr = target_addr + size</code></p>
+<p>同样可以利用 pwntools</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">target_addr = <span class="number">0x7fffa0a0a0a0</span></span><br><span class="line">fp = FileStructure()</span><br><span class="line">payload = fp.write(target_addr,<span class="number">40</span>)</span><br><span class="line"><span class="built_in">print</span>(fp)</span><br><span class="line"><span class="built_in">print</span>(payload)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="4-一些废话"><a href="#4-一些废话" class="headerlink" title="| 4 | 一些废话"></a>| 4 | 一些废话</h2><h3 id="2023-3-28"><a href="#2023-3-28" class="headerlink" title="2023.3.28"></a>2023.3.28</h3><p>在打昨天的校赛的时候才切实体会到了_IO_FILE利用的目的—辅助堆溢出,还有一些利用方式</p>
+<ul>
+<li><p>_IO_FILE的作用:</p>
+<ol>
+<li><p>在高版本作为<code>__malloc_hooks</code>的代替手段。在能通过堆任意地址写任意值时能够控制程序流getshell或者读flag</p>
+</li>
+<li><p>提高堆溢出上限。在通过堆漏洞不能做到任意地址写任意值时，比如只能向任意地址写堆地址,通过劫持IO流，达到任意地址写任意值，或者甚至直接getshell</p>
+</li>
+</ol>
+</li>
+<li><p>_IO_FILE的利用方式:整体思路是，劫持_IO_list_all,根据题目条件选择合适的调用链再设置FILE结构体关键成员的值，从而达到该链最终指向的漏洞代码(比如可控的函数指针调用)</p>
+</li>
+</ul>
+<p>所以要调整一下IO_FILE的学习思路了，网上各种各样的调用链感觉可以分成上面两类来学，学的时候就主要注意结构体成员是怎么设置的，有源码的看看源码，没有的gdb跟进去看一下原因</p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+    
+
+    <span class="post-tags">
+      <i class="icon-tags"></i>
+        <a href="/tags/IO-FILE/">_IO_FILE</a>
+    </span>
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Deployed by <a href="https://github.com/kaedea/notion-down" target="_blank">notion-down</a> and
+    Theme by <a href="https://github.com/kaedea/hexo-theme-hacker" target="_blank">hexo-theme-hacker</a>
+    </br>
+    
+      &copy; 2023
+        sev1n75 &lt;sev1n75@qq.com&gt;
+          
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
