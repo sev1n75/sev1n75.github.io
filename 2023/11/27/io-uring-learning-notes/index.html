@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+    <title>
+      io_uring_learning_notes | sev1n75 | Binary Exploit</title>
+
+  
+  <meta name="author" content="sev1n75">
+  
+
+  
+  <meta name="description" content="CTF Pwn 选手，以此博客分享技术和学习过程">
+  
+
+  
+  
+  <meta name="keywords" content="shellcode">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="io_uring_learning_notes"/>
+
+  <meta property="og:site_name" content="sev1n75"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/images/favicon.png" type="image/png" rel="icon">
+  <link href="/images/favicon.png" rel="apple-touch-icon" sizes="76x76">
+  <link rel="alternate" href="/atom.xml" title="sev1n75" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  
+  <link href="https://fonts.lug.ustc.edu.cn/css?family=Lato|Rubik" rel="stylesheet">
+  <script src="/js/pangu-407.min.js"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+<script>
+  document.addEventListener(' DOMContentLoaded', () => {
+    pangu.autoSpacingPage();
+  });
+</script>
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">
+        sev1n75's Tech Blog
+      </a>
+    </h1>
+    <p class="site-description">
+      
+        路漫漫其修远兮，吾将上下而求索
+          
+    </p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">
+            主页
+          </a></li>
+        
+        <li><a href="/archives">
+            归档
+          </a></li>
+        
+        <li><a href="/tags">
+            标签
+          </a></li>
+        
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>io_uring_learning_notes</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2023/11/27/io-uring-learning-notes/" rel="bookmark">
+        <time class="entry-date published" datetime="2023-11-27T02:06:41.000Z">
+          2023-11-27
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        
+
+<script type="text/javascript">
+    function convertRemToPixels(rem) {    
+        return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    }
+    window.onscroll = function() {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if (scrollTop > convertRemToPixels(40)) {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'visible';
+        } else {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'hidden';
+        }
+    }
+</script>
+
+
+<div id="toc" class="toc-article">
+      <div class="toc-content">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%89%8D%E8%A8%80"><span class="toc-text">| 0 | 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E3%80%90%E8%AF%91%E3%80%91%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%82%E6%AD%A5-IO-%E2%80%94%E2%80%94-io-uring-Effecient-IO-with-io-uring"><span class="toc-text">| 1 | 【译】高性能异步 IO —— io_uring (Effecient IO with io_uring)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%80%BB%E7%BB%93"><span class="toc-text">| 1.1 | 总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%BB%86%E8%8A%82%E8%A1%A5%E5%85%85"><span class="toc-text">| 1.2 | 细节补充</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-io-uring-setup"><span class="toc-text">| 1.2.1 | io_uring_setup()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-%E5%A6%82%E4%BD%95%E4%B8%8E%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E4%BA%A4%E4%BA%92"><span class="toc-text">| 1.2.2 | 如何与共享内存交互</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-io-uring-enter"><span class="toc-text">| 1.2.3 | io_uring_enter()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-liburing"><span class="toc-text">| 1.2.3 | liburing</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-a3%E2%9C%8C%EF%B8%8F%E3%80%90PWN-0x02%E3%80%91-0x0C-io-uring-%E4%B8%8E%E5%BC%82%E6%AD%A5-IO-%E7%9B%B8%E5%85%B3"><span class="toc-text">| 2 | a3✌️【PWN.0x02】- 0x0C. io_uring 与异步 IO 相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BE%8B%E5%AD%90"><span class="toc-text">| 3 | 例子</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-ACTF2023-master-of-orw"><span class="toc-text">| 3.1 | ACTF2023-master-of-orw</span></a></li></ol></li></ol>
+      </div>
+</div>
+<style>
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+
+
+        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>这是我学习 <code>io_uring</code> 的笔记。</p>
+<p><code>2023ACTF</code>比赛中用<code>io_uring</code>编写<code>shellcode</code>绕过沙盒读<code>/flag</code>。</p>
+<blockquote>
+<p><code>io_uring</code> 正在火热迭代，本文的结构体源码取自内核版本 <u><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/io_uring.h">6.6</a></u></p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h2 id="1-【译】高性能异步-IO-——-io-uring-Effecient-IO-with-io-uring"><a href="#1-【译】高性能异步-IO-——-io-uring-Effecient-IO-with-io-uring" class="headerlink" title="| 1 | 【译】高性能异步 IO —— io_uring (Effecient IO with io_uring)"></a>| 1 | <u><a hrefp ="https://icebergu.com/archives/linux-iouring#iXBnMFNt">【译】高性能异步 IO —— io_uring (Effecient IO with io_uring)</a></u></h2><h3 id="1-1-总结"><a href="#1-1-总结" class="headerlink" title="| 1.1 | 总结"></a>| 1.1 | 总结</h3><ul>
+<li><p>io_uring：Linux 内核的高性能异步 I&#x2F;O 框架</p>
+</li>
+<li><p>io_uring 特点：完全异步，支持任意类型的 I&#x2F;O，灵活可拓展</p>
+</li>
+<li><p>io_uring 基本原理：</p>
+<p>提供两个接口，一个将 I&#x2F;O 请求提交到内核，一个从内核接收完成事件。</p>
+<p><strong>⚠️核心在于⚠️</strong>，io_uring 在当前进程和内核之间共享内存 (通过 <code>mmap</code> 在当前进程映射) ，通过操控共享内存与内核交互，避免了频繁调用<code>syscall</code>。</p>
+</li>
+<li><p><code>struct io_uring_cqe</code> &amp; <code>struct io_uring_sqe</code></p>
+<p><code>e</code> 指 <code>entry</code>，表示队列的一个项(元素)，类似 <code>tcache_entry</code>。</p>
+<p>这两个结构体定义了从<code>CQ</code>能取出什么数据，应该放什么数据进<code>SQ</code></p>
+</li>
+<li><p>io_uring 系统调用 API:<code>io_uring_setup(2)</code>, <code>io_uring_enter(2)</code>, <code>io_uring_register(2)</code></p>
+<ul>
+<li><code>io_uring_setup()</code>: 设置上下文</li>
+<li><code>io_uring_enter()</code>: 通知内核，有请求需要处理</li>
+<li><code>io_uring_register()</code>: “注册用于异步 I&#x2F;O 的文件或用户缓冲区”(暂时没了解)</li>
+</ul>
+</li>
+<li><p><u><a target="_blank" rel="noopener" href="https://github.com/axboe/liburing">liburing</a></u></p>
+<img alt="图 5" src="/images/image-20231103064626.png" /></li>
+</ul>
+<h3 id="1-2-细节补充"><a href="#1-2-细节补充" class="headerlink" title="| 1.2 | 细节补充"></a>| 1.2 | 细节补充</h3><h4 id="1-2-1-io-uring-setup"><a href="#1-2-1-io-uring-setup" class="headerlink" title="| 1.2.1 | io_uring_setup()"></a>| 1.2.1 | <code>io_uring_setup()</code></h4>  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">io_uring_setup</span><span class="params">(u32 entries, <span class="keyword">struct</span> io_uring_params *p)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>返回值<code>fd</code>: 用于映射内核-当前程序共享内存来操作<code>SQ</code>, <code>CQ</code>, <code>SQE</code></p>
+</li>
+<li><p><code>entries</code>: 队列中的项(元素)数量</p>
+</li>
+<li><p><code>struct io_uring_params *p</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* Passed in for io_uring_setup(2). Copied back with updated info on success</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring_params</span> &#123;</span></span><br><span class="line">  __u32 sq_entries;</span><br><span class="line">  __u32 cq_entries;</span><br><span class="line">  __u32 flags;</span><br><span class="line">  __u32 sq_thread_cpu;</span><br><span class="line">  __u32 sq_thread_idle;</span><br><span class="line">  __u32 features;</span><br><span class="line">  __u32 wq_fd;  <span class="comment">// I/O uring 的工作队列(Work Queue)文件描述符。</span></span><br><span class="line">  __u32 resv[<span class="number">3</span>];<span class="comment">// 保留字段，用于填充对齐和扩展结构体大小。</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">io_sqring_offsets</span> <span class="title">sq_off</span>;</span>  <span class="comment">// 用于存储 Submission Queue (SQ) 的偏移量信息的结构体。</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">io_cqring_offsets</span> <span class="title">cq_off</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_sqring_offsets</span> &#123;</span></span><br><span class="line">    __u32 head;</span><br><span class="line">    __u32 tail;</span><br><span class="line">    __u32 ring_mask;</span><br><span class="line">    __u32 ring_entries;</span><br><span class="line">    __u32 flags;</span><br><span class="line">    __u32 dropped;  <span class="comment">// 没有提交的 sqe 数量</span></span><br><span class="line">    __u32 <span class="built_in">array</span>;    <span class="comment">// sqe 索引数组</span></span><br><span class="line">    __u32 resv1;</span><br><span class="line">    __u64 user_addr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>映射内存</p>
+<img alt="图 2" src="/images/image-20231103010916.png" />  
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">app_sq_ring</span> &#123;</span>  <span class="comment">// 定义结构体，保存sq_ring的各成员的地址</span></span><br><span class="line">    <span class="type">unsigned</span> *head;</span><br><span class="line">    <span class="type">unsigned</span> *tail;</span><br><span class="line">    <span class="type">unsigned</span> *ring_mask;</span><br><span class="line">    <span class="type">unsigned</span> *ring_entries;</span><br><span class="line">    <span class="type">unsigned</span> *flags;</span><br><span class="line">    <span class="type">unsigned</span> *dropped;</span><br><span class="line">    <span class="type">unsigned</span> *<span class="built_in">array</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> app_sq_ring <span class="title function_">app_setup_sq_ring</span><span class="params">(<span class="type">int</span> ring_fd, <span class="keyword">struct</span> io_uring_params *p)</span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">app_sq_ring</span> <span class="title">sqring</span>;</span></span><br><span class="line">    <span class="comment">// IORING_OFF_SQ_RING,可换成上图另外两个来映射内存</span></span><br><span class="line">    <span class="type">void</span> *ptr = mmap(<span class="number">0</span>, p-&gt;sq_off.<span class="built_in">array</span> + p-&gt;sq_entries * <span class="keyword">sizeof</span>(__u32), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, ring_fd, IORING_OFF_SQ_RING);</span><br><span class="line"></span><br><span class="line">    sqring.head = ptr + p-&gt;sq_off.head;</span><br><span class="line">    sqring.tail = ptr + p-&gt;sq_off.tail;</span><br><span class="line">    sqring.ring_mask = ptr + p-&gt;sq_off.ring_mask;</span><br><span class="line">    sqring.ring_entries = ptr + p-&gt;sq_off.ring_entries;</span><br><span class="line">    sqring.flags = ptr + p-&gt;sq_off.flags;</span><br><span class="line">    sqring.dropped = ptr + p-&gt;sq_off.dropped;</span><br><span class="line">    sqring.<span class="built_in">array</span> = ptr + p-&gt;sq_off.<span class="built_in">array</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> sqring;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="1-2-2-如何与共享内存交互"><a href="#1-2-2-如何与共享内存交互" class="headerlink" title="| 1.2.2 | 如何与共享内存交互"></a>| 1.2.2 | 如何与共享内存交互</h4><ul>
+<li><p><code>struct io_uring_cqe</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* IO completion data structure (Completion Queue Entry)</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring_cqe</span> &#123;</span></span><br><span class="line">    __u64 user_data; <span class="comment">/* sqe-&gt;data submission passed back */</span></span><br><span class="line">    __s32 res;       <span class="comment">/*  */</span></span><br><span class="line">    __u32 flags;     <span class="comment">// 有 4 个选项，详情看 | 0 | 附的源码</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    * If the ring is initialized with IORING_SETUP_CQE32, then this field</span></span><br><span class="line"><span class="comment">    * contains 16-bytes of padding, doubling the size of the CQE.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    __u64 big_cqe[];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>struct io_uring_sqe</code>有点复杂，省略了部分</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* IO submission data structure (Submission Queue Entry)</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring_sqe</span> &#123;</span></span><br><span class="line">    __u8 opcode;  <span class="comment">/* type of operation for this sqe */</span></span><br><span class="line">    __u8 flags;   <span class="comment">/* IOSQE_ flags */</span></span><br><span class="line">    __u16 ioprio; <span class="comment">/* ioprio for the request */</span></span><br><span class="line">    __s32 fd;     <span class="comment">/* file descriptor to do IO on */</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        __u64 off; <span class="comment">/* offset into file */</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        __u64 addr; <span class="comment">/* pointer to buffer or iovecs */</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;;</span><br><span class="line">    __u32 len; <span class="comment">/* buffer size or number of iovecs */</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    __u64 user_data; <span class="comment">/* data to be passed back at completion time */</span></span><br><span class="line">    <span class="comment">/* pack this to avoid bogus arm OABI complaints */</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * If the ring is initialized with IORING_SETUP_SQE128, then</span></span><br><span class="line"><span class="comment">        * this field is used for 80 bytes of arbitrary command data</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<img alt="图 1" src="/images/image-20231102092424.png" />  
+</li>
+<li><p>通讯通道（Communication Channel)</p>
+<blockquote>
+<p>这篇文章翻译的一点小问题，可能是复制代码错了</p>
+</blockquote>
+<p>放入 <code>sqe</code>。</p>
+<p><code>sqring-&gt;sqes</code>应该是映射的<code>sqe</code>数组的地址</p>
+<img alt="图 3" src="/images/image-20231103050750.png" />  
+
+<p>取出 <code>cqe</code></p>
+<img alt="图 4" src="/images/image-20231103052246.png" /></li>
+</ul>
+<h4 id="1-2-3-io-uring-enter"><a href="#1-2-3-io-uring-enter" class="headerlink" title="| 1.2.3 | io_uring_enter()"></a>| 1.2.3 | <code>io_uring_enter()</code></h4>  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">io_uring_enter</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> fd, <span class="type">unsigned</span> <span class="type">int</span> to_submit, <span class="type">unsigned</span> <span class="type">int</span> min_complete, <span class="type">unsigned</span> <span class="type">int</span> flags, <span class="type">sigset_t</span> *sig)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>to_submit</code>: 告诉内核准备消费的提交的sqe数量</li>
+<li><code>min_complete</code>: 要求内核等待请求完成数量</li>
+<li><code>sig</code>: 指向 <code>signal mask</code></li>
+</ul>
+<p>  其余的文章解释的很清楚</p>
+<h4 id="1-2-3-liburing"><a href="#1-2-3-liburing" class="headerlink" title="| 1.2.3 | liburing"></a>| 1.2.3 | <code>liburing</code></h4><ul>
+<li>初始化及释放</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">io_uring_queue_init</span><span class="params">(<span class="type">unsigned</span> entries, <span class="keyword">struct</span> io_uring *ring, <span class="type">unsigned</span> flags)</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring</span> <span class="title">ring</span>;</span></span><br><span class="line">io_uring_queue_init(<span class="number">0x10</span>, &amp;ring, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">io_uring_queue_exit</span><span class="params">(<span class="keyword">struct</span> io_uring *ring)</span>;</span><br><span class="line">io_uring_queue_exit(&amp;ring)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>准备并提交<code>sqe</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring_sqe</span> *<span class="title">sqe</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">io_uring_sqe</span> *<span class="title">cqe</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> io_uring_sqe *<span class="title function_">io_uring_get_sqe</span><span class="params">(<span class="keyword">struct</span> io_uring *ring)</span>;</span><br><span class="line">sqe = io_uring_get_sqe(&amp;ring);</span><br><span class="line"><span class="comment">// io_uring_prep_xxxx</span></span><br><span class="line">io_uring_prep_openat(sqe, AT_FDCWD, <span class="string">&quot;/flag&quot;</span>, O_RDONLY, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">io_uring_submit</span><span class="params">(<span class="keyword">struct</span> io_uring *ring)</span>;</span><br><span class="line">io_uring_submit(&amp;ring);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>等待完成</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">io_uring_wait_cqe</span><span class="params">(<span class="keyword">struct</span> io_uring *ring, <span class="keyword">struct</span> io_uring_cqe **cqe_ptr)</span>;</span><br><span class="line">io_uring_wait_cqe(&amp;ring, &amp;cqe);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>释放<code>cqe</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可选</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">io_uring_cqe_seen</span><span class="params">(<span class="keyword">struct</span> io_uring *ring, <span class="keyword">struct</span> io_uring_cqe *cqe)</span>;</span><br><span class="line">io_uring_cqe_seen(ring, cqe);</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-a3✌️【PWN-0x02】-0x0C-io-uring-与异步-IO-相关"><a href="#2-a3✌️【PWN-0x02】-0x0C-io-uring-与异步-IO-相关" class="headerlink" title="| 2 | a3✌️【PWN.0x02】- 0x0C. io_uring 与异步 IO 相关"></a>| 2 | <u><a hrefp ="https://arttnba3.cn/2021/11/29/PWN-0X02-LINUX-KERNEL-PWN-PART-II/#0x0C-io-uring-与异步-IO-相关">a3✌️【PWN.0x02】- 0x0C. io_uring 与异步 IO 相关</a></u></h2><blockquote>
+<p>与内核利用相关，先收藏，后续看</p>
+</blockquote>
+<h2 id="3-例子"><a href="#3-例子" class="headerlink" title="| 3 | 例子"></a>| 3 | 例子</h2><h3 id="3-1-ACTF2023-master-of-orw"><a href="#3-1-ACTF2023-master-of-orw" class="headerlink" title="| 3.1 | ACTF2023-master-of-orw"></a>| 3.1 | ACTF2023-master-of-orw</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/team-s2/ACTF-2023/tree/main/pwn/master%20of%20orw">官方wp</a></li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+    
+
+    <span class="post-tags">
+      <i class="icon-tags"></i>
+        <a href="/tags/shellcode/">shellcode</a>
+    </span>
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Deployed by <a href="https://github.com/kaedea/notion-down" target="_blank">notion-down</a> and
+    Theme by <a href="https://github.com/kaedea/hexo-theme-hacker" target="_blank">hexo-theme-hacker</a>
+    </br>
+    
+      &copy; 2023
+        sev1n75 &lt;sev1n75@qq.com&gt;
+          
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
