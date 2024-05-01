@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   
     <title>
-      qemu 学习笔记 | sev1n75 | Binary Exploit</title>
+      QEMU 学习笔记 | sev1n75 | Binary Exploit</title>
 
   
   <meta name="author" content="sev1n75">
@@ -16,14 +16,14 @@
 
   
   
-  <meta name="keywords" content="qemu">
+  <meta name="keywords" content="note,qemu">
   
 
   <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-  <meta property="og:title" content="qemu 学习笔记"/>
+  <meta property="og:title" content="QEMU 学习笔记"/>
 
   <meta property="og:site_name" content="sev1n75"/>
 
@@ -86,7 +86,7 @@
 
   
     
-    <h3 class="article-title"><span>qemu 学习笔记</span></h3>
+    <h3 class="article-title"><span>QEMU 学习笔记</span></h3>
     
   
 
@@ -137,7 +137,7 @@
 
 
 
-        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>这是我学习 Qemu escape 的笔记，不是介绍 Qemu escape 的知识分享博客。我会在此博客分享学习 Qemu escape 的过程。</p>
+        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>这是我学习 QEMU escape 的笔记，不是介绍 QEMU escape 的知识分享博客。我会在此博客分享学习 QEMU escape 的过程。</p>
 <blockquote>
 <p>✅最近一次更新：2024-2-20</p>
 </blockquote>
@@ -178,14 +178,14 @@
 <ul>
 <li><p>MemoryRegion：Guest 视角的一块 “内存”</p>
 <p>MR 容器与 MR 实体间构成<strong>树形</strong>结构，其中容器为根节点而实体为子节点。</p>
-<p>MemoryRegion 的成员函数被封装在函数表 <code>MemoryRegionOps</code> 当中，当我们的 Guest 要读写虚拟机上的内存时，在 Qemu 内部实际上会调用 <code>address_space_rw()</code></p>
+<p>MemoryRegion 的成员函数被封装在函数表 <code>MemoryRegionOps</code> 当中，当我们的 Guest 要读写虚拟机上的内存时，在 QEMU 内部实际上会调用 <code>address_space_rw()</code></p>
 <ul>
 <li><p>对于一般的 RAM 内存而言则直接对 MR 对应的内存进行操作</p>
 </li>
 <li><p>对于 MMIO 而言则最终调用到对应的 <code>MR-&gt;ops-&gt;read()</code> 或 <code>MR-&gt;ops-&gt;write()</code>。</p>
 </li>
 </ul>
-<p>在 Qemu 当中 PMIO 的实现同样是通过 MemoryRegion 来完成的，我们可以把一组端口理解为 QEMU 视角的一块 Guest 内存。</p>
+<p>在 QEMU 当中 PMIO 的实现同样是通过 MemoryRegion 来完成的，我们可以把一组端口理解为 QEMU 视角的一块 Guest 内存。</p>
 <blockquote>
 <p>几乎所有的 CTF QEMU Pwn 题都是自定义一个设备并定义相应的 MMIO&#x2F;PMIO 操作。</p>
 </blockquote>
@@ -311,7 +311,7 @@
 
     <span class="post-tags">
       <i class="icon-tags"></i>
-        <a href="/tags/qemu/">qemu</a>
+        <a href="/tags/note/">note</a><a href="/tags/qemu/">qemu</a>
     </span>
     
 

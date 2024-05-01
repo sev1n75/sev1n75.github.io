@@ -16,7 +16,7 @@
 
   
   
-  <meta name="keywords" content="OS,MIT,Experiment">
+  <meta name="keywords" content="OS,note,MIT,Experiment">
   
 
   <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
@@ -139,8 +139,32 @@
 
         <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>MIT 6.S081<del>(6.828?6.1810?)</del> 是 MIT 一门操作系统课程，课程名是 <em>Operating System Engineering</em>（<u><a target="_blank" rel="noopener" href="https://pdos.lcs.mit.edu/6.828/2020/schedule.html">2020年课程网址</a></u>）这是我的学习笔记，包含课程讲座(LECs), xv6 Book 以及实验(Labs)。</p>
 <blockquote>
-<p>✅最近一次更新：2024-4-5</p>
+<p>✅最近一次更新：2024-4-23</p>
 </blockquote>
+<p>后补内容：</p>
+<ul>
+<li><p>LECs:</p>
+<ul>
+<li>LEC 6: xIE, xPIE, xPP bit 部分梳理</li>
+<li>LEC 18: OS Organization</li>
+<li>LEC 20: Kernels and HLL</li>
+<li>LEC 21: Networking</li>
+</ul>
+</li>
+<li><p>xv6 Book:</p>
+<ul>
+<li>Chapter 5: <code>console/uart</code>&amp; <code>mtvec/timervev/CLINT</code> 梳理</li>
+<li>Chapter 9: Concurrency revisited</li>
+</ul>
+</li>
+<li><p>Labs:</p>
+<ul>
+<li>Lab1 util: find &amp; xargs 部分</li>
+<li>Lab8 Lock: Buffer cache 部分</li>
+<li>Lab11 net</li>
+</ul>
+</li>
+</ul>
 <span id="more"></span>
 
 <p>💻：2018 Macbook Air</p>
@@ -149,7 +173,7 @@
 <li>8G 内存</li>
 <li>用虚拟机跑的 Ubuntu 22.04 LTS</li>
 </ul>
-<p>或许是配置问题 <code>usertests</code> 基本都会超时三四十秒，所以延长了一点测试时间。</p>
+<p>或许是电脑配置太低 <code>usertests</code> 基本都会超时三四十秒，所以延长了一点测试时间。(也可能是我代码的问题，不过暂时不优化了)。</p>
 <blockquote>
 <p>笔记中像这样引用的句子为课程中的原文。</p>
 </blockquote>
@@ -458,9 +482,11 @@
 </ul>
 <p>supervisor can <u>use PTEs that have no PTE_U flag</u><br>but supervisor has <strong>no other powers!</strong> e.g.</p>
 <ul>
-<li><strong>can’t</strong> use addresses that <u>aren’t the in page table</u><br>so kernel has to carefully set things up so it can work</li>
+<li><strong>can’t</strong> use addresses that <u>aren’t the in page table</u>（注意：这是当 <code>satp</code> 的 mode bit 不为 0 的情况下，所以如果一个在 S-mode 下设置 <code>satp=0</code> 则可以直接访问物理地址）<br>so kernel has to carefully set things up so it can work</li>
 </ul>
 </blockquote>
+<p>如何识别 RISC-V CPU 处于什么模式&#x2F;xIE, xPIE, xPP bit 是怎么作用的(x &#x3D; M&#x2F;S&#x2F;U)</p>
+<p>后补</p>
 <h4 id="4-1-2-Traps-from-user-space"><a href="#4-1-2-Traps-from-user-space" class="headerlink" title="| 4.1.2 | Traps from user space"></a>| 4.1.2 | Traps from user space</h4><figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">preview:</span><br><span class="line">  write()                        write() returns              User</span><br><span class="line">  -----------------------------------------------------------------</span><br><span class="line">  uservec() in trampoline.S      userret() in trampoline.S   Kernel</span><br><span class="line">  usertrap() in trap.c           usertrapret() in trap.c</span><br><span class="line">  syscall() in syscall.c           ^</span><br><span class="line">  sys_write() in sysfile.c      ---|</span><br></pre></td></tr></table></figure>
 
 <blockquote>
@@ -514,10 +540,6 @@
 </ul>
 </li>
 </ul>
-<p>中断的开与关：</p>
-<blockquote>
-<p>后补</p>
-</blockquote>
 <h4 id="4-1-3-Traps-from-kernel-space"><a href="#4-1-3-Traps-from-kernel-space" class="headerlink" title="| 4.1.3 | Traps from kernel space"></a>| 4.1.3 | Traps from kernel space</h4><ul>
 <li><p><code>kernelvec</code></p>
 <p>保存 31 个寄存器到内核栈</p>
@@ -1008,9 +1030,14 @@
 <p>这样虚拟机的内核才能处理来自虚拟机用户态(guest userspace)的 <em>trap</em>。</p>
 <p>当虚拟机内核处理结束执行 <code>sret</code> 的时候，同样会陷入宿主机的内核(trap into host kernel), (因为虚拟机内核实际上是运行在宿主机的用户态)然后宿主机内核交给 VMM 处理。</p>
 <p>VMM 模拟相应指令(把模拟 <code>sepc</code> 拷贝到 <code>pc</code>，修改虚拟机为用户模式)回到虚拟机用户态。整个过程就像 guest userspace-&gt; guest kernel space -&gt; guest userspace 一样。</p>
-<p>另一个问题页表(pagetable)，VMM 不能让虚拟机设置真正的 <code>satp</code>，这样会使得虚拟机可以访问任意物理内存。同时 VMM 需要把真实的物理地址(Host Physical Address)针对每一个虚拟机，抽象成虚拟机的物理地址(Guest Physical Address)。</p>
-<p>VMM 因此维护一个对应映射表(shallow pagetable)用于设置真正的 <code>satp</code> 使用 MMU 翻译地址, <em>shallow pagetable</em>的内容是 gva:hpa。</p>
-<p>最后是设备问题。</p>
+<p>另一个问题：页表(pagetable):</p>
+<ul>
+<li><p>VMM 不能让虚拟机设置真正的 <code>satp</code>，这样会使得虚拟机可以访问任意物理内存。同时 VMM 需要把真实的物理地址(Host Physical Address)针对每一个虚拟机，抽象成虚拟机的物理地址(Guest Physical Address)。</p>
+</li>
+<li><p>VMM 因此维护一个对应映射表(shallow pagetable)用于设置真正的 <code>satp</code> 使用 MMU 翻译地址, <em>shallow pagetable</em>的内容是 gva:hpa。</p>
+</li>
+</ul>
+<p>最后是设备问题:</p>
 <ul>
 <li>VMM 模拟设备。</li>
 <li>VMM 虚拟设备，并提供接口给虚拟机。因而虚拟机的设备驱动可以与 VMM 内支持的设备进行高效交互，而不是需要陷入 VMM。</li>
@@ -1120,7 +1147,7 @@
 
     <span class="post-tags">
       <i class="icon-tags"></i>
-        <a href="/tags/OS/">OS</a><a href="/tags/MIT/">MIT</a><a href="/tags/Experiment/">Experiment</a>
+        <a href="/tags/OS/">OS</a><a href="/tags/note/">note</a><a href="/tags/MIT/">MIT</a><a href="/tags/Experiment/">Experiment</a>
     </span>
     
 

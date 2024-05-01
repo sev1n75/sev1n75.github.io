@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+    <title>
+      Linux-Kernel 学习笔记 | sev1n75 | Binary Exploit</title>
+
+  
+  <meta name="author" content="sev1n75">
+  
+
+  
+  <meta name="description" content="CTF Pwn 选手，以此博客分享技术和学习过程">
+  
+
+  
+  
+  <meta name="keywords" content="Linux Kernel,OS,Memory Management,note">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="Linux-Kernel 学习笔记"/>
+
+  <meta property="og:site_name" content="sev1n75"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/images/favicon.png" type="image/png" rel="icon">
+  <link href="/images/favicon.png" rel="apple-touch-icon" sizes="76x76">
+  <link rel="alternate" href="/atom.xml" title="sev1n75" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  
+  <link href="https://fonts.lug.ustc.edu.cn/css?family=Lato|Rubik" rel="stylesheet">
+  <script src="/js/pangu-407.min.js"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+<script>
+  document.addEventListener(' DOMContentLoaded', () => {
+    pangu.autoSpacingPage();
+  });
+</script>
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">
+        sev1n75's Tech Blog
+      </a>
+    </h1>
+    <p class="site-description">
+      
+        路漫漫其修远兮，吾将上下而求索
+          
+    </p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">
+            主页
+          </a></li>
+        
+        <li><a href="/archives">
+            归档
+          </a></li>
+        
+        <li><a href="/tags">
+            标签
+          </a></li>
+        
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>Linux-Kernel 学习笔记</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2024/05/01/Linux-Kernel-learning-note/" rel="bookmark">
+        <time class="entry-date published" datetime="2024-05-01T06:21:05.000Z">
+          2024-05-01
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        
+
+<script type="text/javascript">
+    function convertRemToPixels(rem) {    
+        return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    }
+    window.onscroll = function() {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if (scrollTop > convertRemToPixels(40)) {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'visible';
+        } else {
+            document.getElementsByClassName('toc-article')[0].style.visibility = 'hidden';
+        }
+    }
+</script>
+
+
+<div id="toc" class="toc-article">
+      <div class="toc-content">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%89%8D%E8%A8%80"><span class="toc-text">| 0 | 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understanding-the-Linux-Virtual-Memory-Manager-online-book-by-Mel-Gorman-2007"><span class="toc-text">| 1 | Understanding the Linux Virtual Memory Manager, online book by Mel Gorman, 2007.</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%BB%84%E7%BB%87%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98-1-4-5%E7%AB%A0"><span class="toc-text">| 1.1 | 组织物理内存(1-4.5章)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%BC%BA%E9%A1%B5%E5%BC%82%E5%B8%B8-4-6%E7%AB%A0"><span class="toc-text">| 1.2 | 缺页异常(4.6章)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D-5-8%E7%AB%A0"><span class="toc-text">| 1.3 | 内存分配(5-8章)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%85%B6%E4%BB%96-9-13%E7%AB%A0"><span class="toc-text">| 1.4 | 其他(9-13章)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-arttnba3-%E3%80%90OS-0x02-0x04%E3%80%91Linux-%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E3%80%81%E5%8C%BA%E3%80%81%E8%8A%82%E7%82%B9%EF%BC%8CBuddy-System%EF%BC%8CSlub-Allocator"><span class="toc-text">| 2 | arttnba3 -【OS.0x02-0x04】Linux 内核内存管理-页、区、节点，Buddy System，Slub Allocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E3%80%90OS-0x02%E3%80%91Linux-%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86I-%E9%A1%B5%E3%80%81%E5%8C%BA%E3%80%81%E8%8A%82%E7%82%B9-arttnba3"><span class="toc-text">| 2.1 | 【OS.0x02】Linux 内核内存管理I - 页、区、节点, arttnba3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E3%80%90OS-0x03%E3%80%91Linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86II-Buddy-System-arttnba3"><span class="toc-text">| 2.2 | 【OS.0x03】Linux内核内存管理II - Buddy System, arttnba3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E3%80%90OS-0x04%E3%80%91Linux-%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%B5%85%E6%9E%90-III-Slub-Allocator-arttnba3"><span class="toc-text">| 2.3 | 【OS.0x04】Linux 内核内存管理浅析 III - Slub Allocator, arttnba3</span></a></li></ol></li></ol>
+      </div>
+</div>
+<style>
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+
+
+        <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="| 0 | 前言"></a>| 0 | 前言</h2><p>Linux Kernel 学习笔记。</p>
+<blockquote>
+<p>✅ 持续更新</p>
+</blockquote>
+<p>Todo(先后顺序):</p>
+<ul>
+<li>(<strong>Doing</strong>)v6 buddy&amp;slub - |2|</li>
+<li><u><a target="_blank" rel="noopener" href="https://docs.kernel.org/arch/x86/index.html">x86-specific Documentation</a></u><ul>
+<li>21.Page Table Isolation (PTI)</li>
+<li>29.x86_64 Support–29.3, 29.4, 29.7, 29.8</li>
+<li>15.Control-flow Enforcement Technology (CET) Shadow Stack</li>
+</ul>
+</li>
+<li><u><a target="_blank" rel="noopener" href="https://hustseclab.gitbook.io/linux-insides-zh">linux-insides-zh</a></u><ul>
+<li>Booting &amp; Initialization</li>
+<li>Trap</li>
+</ul>
+</li>
+<li>cgroups</li>
+<li><u><a target="_blank" rel="noopener" href="https://docs.kernel.org/filesystems/">Filesystems in the Linux kernel</a></u></li>
+<li>Page Cache</li>
+<li>|1.4| 剩余内容</li>
+<li>Memblock 整体梳理 mm&#x2F;memblock.c |1.3|</li>
+<li>…</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="1-Understanding-the-Linux-Virtual-Memory-Manager-online-book-by-Mel-Gorman-2007"><a href="#1-Understanding-the-Linux-Virtual-Memory-Manager-online-book-by-Mel-Gorman-2007" class="headerlink" title="| 1 | Understanding the Linux Virtual Memory Manager, online book by Mel Gorman, 2007."></a>| 1 | <u><a target="_blank" rel="noopener" href="https://www.kernel.org/doc/gorman/html/understand/understand005.html">Understanding the Linux Virtual Memory Manager</a></u>, online book by Mel Gorman, 2007.</h2><p>这本书主要介绍 i386 架构下的 v2.4.22 内核，比较久远。所以主要是从宏观上整体熟悉 Linux 内核管理内存的基本流程即可，没必要在老版本纠结细节。当需要熟悉细节内容(通常是目前最新的内核)时，有了整体的把握能够更轻松。</p>
+<blockquote>
+<p>当然这么老且经典的书应该是有翻译的 <u>🔗 <a target="_blank" rel="noopener" href="https://groups.google.com/g/2012-ustc-linux-kernel/c/oMmfFK-9u84">翻译版</a></u>。</p>
+<p>大佬的笔记 <u>🔗 <a target="_blank" rel="noopener" href="https://github.com/lorenzo-stoakes/linux-gorman-book-notes">linux-gorman-book-notes, Lorenzo Stoakes</a></u>。</p>
+</blockquote>
+<p>第一章简单介绍了 <em>Configure&amp;Build</em>，<em>Managing the Source</em>，<em>Browsing the Code</em>，三个方面。</p>
+<p>现在的方法和十几年前有一些区别：</p>
+<ul>
+<li>配置和编译差不太多。</li>
+<li>管理源码：这本书应该是 03，04 年写的，Linus 还没开发 <em>Git</em>。书上介绍了 <em>Diff+Patch</em>。现在基本使用 <em>Git</em> 管理源码。</li>
+<li>浏览代码：书上推荐 <em>vim+ctags</em>，或者 LXR。人生苦短，我用 <em>neovim+telescope+ctags</em> 。在线网站 <u><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/latest/source">elixir bootlin</a></u></li>
+</ul>
+<p>后续内容就主要看 Lorenzo Stoakes 的笔记了。重点记录宏观的内容，和自己的理解，细节部分比如某些结构体域的意义之类的就没必要照抄了，原文里都有。</p>
+<h3 id="1-1-组织物理内存-1-4-5章"><a href="#1-1-组织物理内存-1-4-5章" class="headerlink" title="| 1.1 | 组织物理内存(1-4.5章)"></a>| 1.1 | 组织物理内存(1-4.5章)</h3><p><strong>2.3</strong> zone 初始化: <code>zone_size_init()</code>，之前还要调用 <code>setup_memory()</code> 计算 zone 的大小</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// i386</span></span><br><span class="line">start_kernel()</span><br><span class="line">        |</span><br><span class="line">        +-&gt; setup_arch()</span><br><span class="line">                 | |</span><br><span class="line">setup_memory() &lt;-+ +-&gt; paging_init()</span><br><span class="line">                         | |</span><br><span class="line">      pagetable_init() &lt;-+ +-&gt; zone_sizes_init()</span><br><span class="line">                                  |</span><br><span class="line">                                  +-&gt; free_area_init()</span><br><span class="line">                                          |</span><br><span class="line">                                          +-&gt; free_area_init_core()</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.6</strong> page 到 zone 的映射关系</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// linclude/linux/mm.h:344 set_page_zone()</span></span><br><span class="line">page-&gt;flags &amp;= ~(~<span class="number">0UL</span> &lt;&lt; ZONE_SHIFT);   <span class="comment">// 留下了低 ZONE_SHIFT 给 flag</span></span><br><span class="line">page-&gt;flags |= zone_num &lt;&lt; ZONE_SHIFT;  <span class="comment">// 高位存放 zone_num</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>3.2</strong> 描述页表项(Page Tabel Entry)</p>
+<ul>
+<li><p>两个需要注意的标志(flag):</p>
+<ul>
+<li><code>_PAGE_PRESENT</code>: 表示该页仍在内存中，没有被换出(swapped out)。</li>
+<li><code>_PAGE_PROTNONE</code>: 表示 non-present 页，用来区别被换出的页。</li>
+</ul>
+</li>
+<li><p><code>pte_present(x)</code>: 当该页被换出时返回0。(存在 <code>_PAGE_PRESENT</code> 没设置而 <code>_PAGE_PROTNONE</code> 被设置的情况吗)</p>
+</li>
+</ul>
+<p><strong>3.6</strong> 分页(<em>paging</em>)初始化: <code>pagetable_init()</code></p>
+<ul>
+<li><code>arch/i386/kernel/head.S:44 startup_32</code> 初始化页表，包含两个页(<code>pg0, pg1</code>)</li>
+<li>调用 <code>pagetable_init()</code>（调用链见上面 2.3 节笔记） 初始化访问 <code>ZONE_DMA</code> 和 <code>ZONE_NORMAL</code> 所需的页表。</li>
+</ul>
+<h3 id="1-2-缺页异常-4-6章"><a href="#1-2-缺页异常-4-6章" class="headerlink" title="| 1.2 | 缺页异常(4.6章)"></a>| 1.2 | 缺页异常(4.6章)</h3><ul>
+<li><p>有两种：严重(major)和轻微(miner)。当必须从磁盘读数据的时缺页错误是严重(major)的错误。</p>
+</li>
+<li><p>缺页错误的几种情况：</p>
+<p>序号. 程度 - 描述 - 解决方法</p>
+<ol>
+<li>轻微 - 地址在内存区域(memory region&#x2F;VMA)有效，但页面未分配 - 分配页。</li>
+<li>轻微 - 地址在内存区域无效，但位于可扩展区域（如栈）旁边 - 扩展区域并分配页。</li>
+<li>轻微 - 页面已被换出(swapped out)，但存在于交换缓存(swap cache)中 - 在进程页表中重新建立页面并删除对该缓存的引用计数(ref count)。</li>
+<li>严重 - 页面交换到后备存储(backing storage)中 - 找到该页，然后从磁盘读出来。</li>
+<li>轻微 - 写一个只读的页 - 如果该页是 COW 页，则复制然后标记为可写分配给进程，否则发送 <code>SIGSEGV</code>。</li>
+<li>错误 - 地址所在内存区域无效或进程无权访问 - 发送 <code>SIGSEGV</code>。</li>
+<li>轻微 - 异常地址位于内核地址空间 - 如在 vmalloc 区域，则当前进程页表将根据 <code>init_mm</code> 保存的页表进行更新。同时这是有效的内核缺页异常。</li>
+<li>错误 - 在内核模式下，缺页地址位于用户地址空间 - 这不应该发生，如果发生意味着内核代码未正确使用来自从用户空间的地址从而导致缺页异常。需要非常严肃地对待。</li>
+</ol>
+</li>
+</ul>
+<p><strong>处理</strong>缺页异常</p>
+<ul>
+<li><p>缺页异常的顶层函数(page fault handler) <code>do_page_fault()</code>:</p>
+<p>负责确定发生了哪种类型的异常，判断正确性(比如如果内存区域无效，但是符合情况 <code>2.</code>，则会调用 <code>expand_stack(vma, address)</code>)然后调用 <code>handle_mm_fault()</code>。</p>
+<p>依赖不同的 CPU 架构。</p>
+<p><u><a target="_blank" rel="noopener" href="https://github.com/lorenzo-stoakes/linux-gorman-book-notes/blob/master/4.md#461-handing-a-page-fault">🔗 函数处理流程图</a></u></p>
+</li>
+<li><p><code>handel_mm_fault()</code></p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">handle_mm_fault() ----------&gt; expand_stack() -------&gt; handel_pte_fault()</span><br><span class="line">      |           if in 2.                             ^  |</span><br><span class="line">      |                                                |  |</span><br><span class="line">      +------------------------------------------------+  |</span><br><span class="line">              if in 1. || 3-8.                            | </span><br><span class="line">                                                          |</span><br><span class="line">                                                         /|\</span><br><span class="line">                                                        / | \</span><br><span class="line">                                                       /  |  \</span><br><span class="line">                                                      +   |   \</span><br><span class="line">                                                      |   |    \</span><br><span class="line">                                                      v   |     \</span><br><span class="line">                                            do_no_page()  |      \</span><br><span class="line">                                                          v       +</span><br><span class="line">                                               do_swap_page()     | </span><br><span class="line">                                                                  v</span><br><span class="line">                                                        do_wp_page()</span><br></pre></td></tr></table></figure>
+
+<p><code>handel_pte_fault()</code> 解决了以下几种异常：</p>
+<ul>
+<li>页面不存在: <code>do_no_page()</code><ul>
+<li><code>1. 6. 7. 8.</code></li>
+</ul>
+</li>
+<li>页面被换出: <code>do_swap_page()</code><ul>
+<li><code>3. 4.</code></li>
+</ul>
+</li>
+<li>页面不可读: <code>do_wp_page()</code><ul>
+<li><code>5. 6.</code></li>
+</ul>
+</li>
+<li>当页面在内存中且可读时也会遇到错误，这种情况发生在某些没有 3 级页表的体系结构中</li>
+</ul>
+</li>
+<li><p>注意：</p>
+<ul>
+<li>内核通过该区域的 VMA 是否可写判断 COW 页面，无需 PTE_C 标识位(flag)</li>
+<li>VMA 可以通过 <code>v_op</code> 注册 <code>nopage()</code> 特殊的处理函数。默认 <code>do_anonymous_page()</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-内存分配-5-8章"><a href="#1-3-内存分配-5-8章" class="headerlink" title="| 1.3 | 内存分配(5-8章)"></a>| 1.3 | 内存分配(5-8章)</h3><p><strong>5.</strong> Boot Memory Allocator</p>
+<ul>
+<li><p>在内核启动阶段，内存还没有被初始化，同时其他的内存分配器也需要一些内存来初始化自己，所以 Boot Memory Allocator 就是负责在内核启动的早期简单分配内存的。</p>
+<p>但是这个机制大概在 v4 版本的内核被 <em>Memblock</em> 技术取代了。<u><a target="_blank" rel="noopener" href="https://tinylab.org/lwn-761215/">🔗 参考链接</a></u></p>
+</li>
+</ul>
+<p><strong>6. Buddy System</strong> 物理内存分配</p>
+<ul>
+<li>分配(alloc): <code>__alloc_pages()</code></li>
+<li>释放(free): <code>free_pages()</code></li>
+<li>GFP(Get Free Page) Flags:<ul>
+<li>决定 allocator 和 <code>kswapd</code> 在分配和释放页的行为。</li>
+<li>GFP 分为三组：<em>zone modifiers</em>, <em>action modifiers</em>, <em>high-level action modifiers</em> (低级 action modifiers 的组合)</li>
+</ul>
+</li>
+</ul>
+<p><strong>7. 虚拟连续但物理非连续</strong>内存分配</p>
+<ul>
+<li><code>____VMALLOC_RESERVE = 128 &lt;&lt; 20</code> 表示 <code>vmalloc()</code> 能分配的最小大小。</li>
+<li>由于 <code>vmalloc()</code> 的特性限制，其在内核中很少使用。</li>
+<li>通过 <code>vm_struct</code> 结构体表示</li>
+</ul>
+<p><strong>8. Slab Allocator</strong> 缓存层</p>
+<ul>
+<li><u><a href="#2-3-%E3%80%90OS-0x04%E3%80%91Linux-%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%B5%85%E6%9E%90-III-Slub-Allocator">| 2.3 |</a></u></li>
+</ul>
+<h3 id="1-4-其他-9-13章"><a href="#1-4-其他-9-13章" class="headerlink" title="| 1.4 | 其他(9-13章)"></a>| 1.4 | 其他(9-13章)</h3><p>后补</p>
+<ul>
+<li><p><strong>9</strong> Highmem 管理</p>
+<p>64 位不涉及</p>
+</li>
+<li><p><strong>10-11</strong> 换页</p>
+</li>
+<li><p><strong>12</strong> 共享内存虚拟文件系统</p>
+</li>
+<li><p><strong>13</strong> 内存不足(OOM)管理</p>
+</li>
+</ul>
+<!-- ## | 2 | <u>[linux-mm-notes, Lorenzo Stoakes](https://github.com/lorenzo-stoakes/linux-mm-notes/tree/master)</u>
+
+关于 amd64 架构，v6 内核的内存管理梳理。但是作者写到一半准备写一本书，所以就没公开后续内容。
+
+### | 2.1 | 内核内存分布(Kernel Memory Layout)
+
+太乱了，理不清，看不进去。
+
+- 补充阅读：<u>🔗[Linux Kernel Doc-Subsystems-Memory Management-Page Tables](https://docs.kernel.org/mm/page_tables.html)</u>
+
+### | 2.2 | 物理内存组织与分配
+
+- NUMA 的例子：一个主板上多个内存插槽可以插不同的内存条。不同的插槽间通信比较慢，所以每个插槽抽象成一个 *node*，尽量在 *node* 内部分配内存，提高效率。 -->
+
+<h2 id="2-arttnba3-【OS-0x02-0x04】Linux-内核内存管理-页、区、节点，Buddy-System，Slub-Allocator"><a href="#2-arttnba3-【OS-0x02-0x04】Linux-内核内存管理-页、区、节点，Buddy-System，Slub-Allocator" class="headerlink" title="| 2 | arttnba3 -【OS.0x02-0x04】Linux 内核内存管理-页、区、节点，Buddy System，Slub Allocator"></a>| 2 | arttnba3 -【OS.0x02-0x04】Linux 内核内存管理-页、区、节点，Buddy System，Slub Allocator</h2><h3 id="2-1-【OS-0x02】Linux-内核内存管理I-页、区、节点-arttnba3"><a href="#2-1-【OS-0x02】Linux-内核内存管理I-页、区、节点-arttnba3" class="headerlink" title="| 2.1 | 【OS.0x02】Linux 内核内存管理I - 页、区、节点, arttnba3"></a>| 2.1 | <u><a target="_blank" rel="noopener" href="https://arttnba3.cn/2021/11/28/OS-0X02-LINUX-KERNEL-MEMORY-5.11-PART-I/">【OS.0x02】Linux 内核内存管理I - 页、区、节点</a></u>, arttnba3</h3><h3 id="2-2-【OS-0x03】Linux内核内存管理II-Buddy-System-arttnba3"><a href="#2-2-【OS-0x03】Linux内核内存管理II-Buddy-System-arttnba3" class="headerlink" title="| 2.2 | 【OS.0x03】Linux内核内存管理II - Buddy System, arttnba3"></a>| 2.2 | <u><a target="_blank" rel="noopener" href="https://arttnba3.cn/2022/06/30/OS-0X03-LINUX-KERNEL-MEMORY-5.11-PART-II/">【OS.0x03】Linux内核内存管理II - Buddy System</a></u>, arttnba3</h3><h3 id="2-3-【OS-0x04】Linux-内核内存管理浅析-III-Slub-Allocator-arttnba3"><a href="#2-3-【OS-0x04】Linux-内核内存管理浅析-III-Slub-Allocator-arttnba3" class="headerlink" title="| 2.3 | 【OS.0x04】Linux 内核内存管理浅析 III - Slub Allocator, arttnba3"></a>| 2.3 | <u><a target="_blank" rel="noopener" href="https://arttnba3.cn/2023/02/24/OS-0X04-LINUX-KERNEL-MEMORY-6.2-PART-III/">【OS.0x04】Linux 内核内存管理浅析 III - Slub Allocator</a></u>, arttnba3</h3>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+    
+
+    <span class="post-tags">
+      <i class="icon-tags"></i>
+        <a href="/tags/Linux-Kernel/">Linux Kernel</a><a href="/tags/OS/">OS</a><a href="/tags/Memory-Management/">Memory Management</a><a href="/tags/note/">note</a>
+    </span>
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Deployed by <a href="https://github.com/kaedea/notion-down" target="_blank">notion-down</a> and
+    Theme by <a href="https://github.com/kaedea/hexo-theme-hacker" target="_blank">hexo-theme-hacker</a>
+    </br>
+    
+      &copy; 2024
+        sev1n75 &lt;sev1n75@qq.com&gt;
+          
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
